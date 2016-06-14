@@ -1,0 +1,19 @@
+{
+  "A": "C_NONE",
+  "B": "C_ASKLOAN",
+  "C": "C_COPSMESG",
+  "D": "C_ASKBITCH",
+  "E": "C_ASKGUN",
+  "F": "C_ASKGUNSHOP",
+  "G": "C_ASKPUB",
+  "H": "C_ASKBANK",
+  "I": "C_ASKRUN",
+  "J": "C_ASKRUNFIGHT",
+  "K": "C_ASKSEW",
+  "L": "C_MEETPLAYER",
+  "M": "C_FIGHT",
+  "N": "C_FIGHTDONE",
+  "O": "C_MOTD",
+  "P": "C_VERSIONCHECK",
+  "Q": "C_MISSFIGHT"
+}
