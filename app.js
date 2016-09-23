@@ -12,6 +12,16 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var exphbs  = require('express-handlebars');
 
+var OAuth = require('oauth');
+
+var OAuth2 = OAuth.OAuth2;    
+var oauth2 = new OAuth2(config.slack.client_id,
+    config.slack.client_secret,
+    'https://slack.com/', 
+    '/oauth/authorize',
+    '/api/oauth.access', 
+    null);
+
 var gm = new GameManager();
 
 var rtm = new RtmClient(config.bot.bot_access_token, {
@@ -109,6 +119,21 @@ app.post('/button', function (req, res) {
 		res.status(200).json(message);
 
 	});
+
+});
+
+app.get('/oauth', function (req, res) {
+
+    oauth2.getOAuthAccessToken(
+        req.query.code,
+        {'grant_type':'client_credentials'},
+        function (e, access_token, refresh_token, results) {
+
+        	console.log(results);
+
+            res.redirect('/complete');
+        }
+    );
 
 });
 

@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@slack/client": "^3.4.0",
+    "async-function-queue": "^1.0.0",
     "body-parser": "^1.15.1",
     "config": "^1.21.0",
     "express": "^4.13.4",
@@ -17,6 +18,7 @@
     "inquirer": "^1.0.3",
     "lodash": "^4.13.1",
     "moment": "^2.13.0",
-    "telnet-client": "^0.9.3"
+    "oauth": "^0.9.14",
+    "telnet-client": "^0.10.6"
   }
 }

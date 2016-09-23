@@ -1,0 +1,11 @@
+{
+  "A": "F_ARRIVED",
+  "S": "F_STAND",
+  "H": "F_HIT",
+  "M": "F_MISS",
+  "R": "F_RELOAD",
+  "L": "F_LEAVE",
+  "D": "F_LASTLEAVE",
+  "F": "F_FAILFLEE",
+  "G": "F_MSG"
+}
