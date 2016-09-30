@@ -15,7 +15,6 @@
     "config": "^1.21.0",
     "express": "^4.13.4",
     "express-handlebars": "^3.0.0",
-    "inquirer": "^1.0.3",
     "lodash": "^4.13.1",
     "moment": "^2.15.1",
     "oauth": "^0.9.14",
