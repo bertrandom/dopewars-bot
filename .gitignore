@@ -3,3 +3,4 @@ node_modules
 sftp-config.json
 config/local.json5
 state/dopewars.sco
+sftp-config.json
