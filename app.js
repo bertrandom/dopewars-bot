@@ -14,6 +14,8 @@ var exphbs  = require('express-handlebars');
 
 var OAuth = require('oauth');
 
+var crypto = require('crypto');
+
 var OAuth2 = OAuth.OAuth2;    
 var oauth2 = new OAuth2(config.slack.client_id,
     config.slack.client_secret,
@@ -25,60 +27,84 @@ var oauth2 = new OAuth2(config.slack.client_id,
 var gm = new GameManager();
 
 var rtm = new RtmClient(config.bot.bot_access_token, {
-	// Sets the level of logging we require
 	logLevel: 'error',
-	// Initialise a data store for our client, this will load additional helper functions for the storing and retrieval of data
 	dataStore: new MemoryDataStore(),
-	// Boolean indicating whether Slack should automatically reconnect after an error response
 	autoReconnect: true,
-	// Boolean indicating whether each message should be marked as read or not after it is processed
 	autoMark: true
 });
 
 var webClient = new WebClient(config.bot.bot_access_token, {
-	// Sets the level of logging we require
 	logLevel: 'error',
-	// Initialise a data store for our client, this will load additional helper functions for the storing and retrieval of data
 	dataStore: new MemoryDataStore()
 });
 
 rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, function (rtmStartData) {
+	console.log('Connected to Slack RTM API.');
+});
 
-	var RTM_EVENTS = require('@slack/client').RTM_EVENTS;
+var RTM_EVENTS = require('@slack/client').RTM_EVENTS;
 
-	rtm.on(RTM_EVENTS.MESSAGE, function (message) {
+rtm.on(RTM_EVENTS.MESSAGE, function (message) {
 
-		if (message.subtype && message.subtype == 'bot_message') {
+	if (message.subtype && message.subtype == 'bot_message') {
+		return;
+	}
+
+	if (message.subtype && message.subtype == 'message_changed') {
+		return;
+	}
+
+	if (message.subtype && message.subtype == 'message_deleted') {
+		return;
+	}
+
+	// If this is a DM
+	if (message.channel.startsWith('D')) {
+
+		var user = rtm.dataStore.getUserById(message.user)
+
+		if (!user) {
+			console.log(message);
 			return;
 		}
+		var dm = rtm.dataStore.getDMByName(user.name);
 
-		if (message.subtype && message.subtype == 'message_changed') {
-			return;
-		}
+		var game;
 
-		if (message.subtype && message.subtype == 'message_deleted') {
-			return;
-		}
+		if (gm.exists(dm)) {
 
-		// If this is a DM
-		if (message.channel.startsWith('D')) {
-
-			var user = rtm.dataStore.getUserById(message.user)
-
-			if (!user) {
-				console.log(message);
-				return;
-			}
-			var dm = rtm.dataStore.getDMByName(user.name);
-
-			// rtm.sendMessage('Hello ' + user.name + '!', dm.id);
-
-			var game = gm.get(user, dm, rtm, webClient);
+			game = gm.get(user, dm, rtm, webClient);
 			game.handleSlackMessage(message);
 
+		} else {
+
+			var attachments = [];
+
+			var actions = [];
+
+			actions.push({
+			type: 'button',
+			value: 'start_game',
+			name: 'start_game',
+			text: 'Start Game'
+			});
+
+			attachments.push({
+				text: '',
+				callback_id: dm.id + '-' + crypto.randomBytes(16).toString('hex'),
+				actions: actions
+			});
+
+			webClient.chat.postMessage(dm.id, 
+				"Based on John E. Dell's old Drug Wars game, dopewars is a simulation of an imaginary drug market.  dopewars is an All-American game which features buying, selling, and trying to get past the cops!" + "\n\n" +
+				"The first thing you need to do is pay off your debt to the Loan Shark. After that, your goal is to make as much money as possible (and stay alive)! You have one month of game time to make your fortune.",
+				{
+					attachments: attachments
+				});
+
 		}
 
-	});
+	}
 
 });
 
@@ -107,7 +133,26 @@ app.post('/button', function (req, res) {
 	var user = rtm.dataStore.getUserById(payload.user.id);
 	var dm = rtm.dataStore.getDMById(payload.channel.id);
 
-	var game = gm.get(user, dm, rtm, webClient);
+	var game;
+
+	if (payload.actions[0].value == 'start_game') {
+
+		if (gm.exists(dm)) {
+			return res.status(200);
+		}
+
+		game = gm.get(user, dm, rtm, webClient);
+
+		var message = {
+			response_type: 'in_channel',
+            delete_original: true
+		};
+
+		return res.status(200).json(message);
+
+	}
+
+	game = gm.get(user, dm, rtm, webClient);
 
 	game.handleButtonClicked(payload, function(message) {
 
@@ -128,9 +173,6 @@ app.get('/oauth', function (req, res) {
         req.query.code,
         {'grant_type':'client_credentials'},
         function (e, access_token, refresh_token, results) {
-
-        	console.log(results);
-
             res.redirect('/complete');
         }
     );
