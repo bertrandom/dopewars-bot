@@ -3,4 +3,6 @@ node_modules
 sftp-config.json
 config/local.json5
 state/dopewars.sco
+state/dopewars.log
+state/dopewars.pid
 sftp-config.json
