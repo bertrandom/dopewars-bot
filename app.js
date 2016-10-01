@@ -14,6 +14,9 @@ var OAuth = require('oauth');
 
 var crypto = require('crypto');
 
+var redis = require("redis");
+var rc = redis.createClient();
+
 var OAuth2 = OAuth.OAuth2;    
 var oauth2 = new OAuth2(config.slack.client_id,
     config.slack.client_secret,
@@ -24,10 +27,7 @@ var oauth2 = new OAuth2(config.slack.client_id,
 
 var gm = new GameManager();
 
-var webClient = new WebClient(config.bot.bot_access_token, {
-	logLevel: 'error',
-	dataStore: new MemoryDataStore()
-});
+var webClients = {};
 
 var app = express();
 
@@ -45,62 +45,99 @@ app.use(express.static('static'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+var getWebClient = function(team_id, cb) {
+
+	if (webClients[team_id]) {
+		return cb(null, webClients[team_id]);
+	}
+
+	rc.get('dopewars:' + team_id, function(err, bot_access_token) {
+
+		if (err) {
+			return cb(err);
+		}
+
+		if (bot_access_token) {
+
+			var webClient = new WebClient(bot_access_token, {
+				logLevel: 'error',
+				dataStore: new MemoryDataStore()
+			});
+
+			webClients[team_id] = webClient;
+
+			return cb(null, webClient);
+
+		}
+
+	});
+
+}
+
 app.post('/button', function (req, res) {
 
 	var payload = JSON.parse(req.body.payload);
 
-	var user = {
-		team_id: payload.team.id,
-		id: payload.user.id,
-		name: payload.user.name
-	};
+	getWebClient(payload.team.id, function (err, webClient) {
 
-	var dm = {
-		id: payload.channel.id
-	};
+		if (err) {
+			return res.status(500).send('Team not recognized.');
+		}
 
-	var game;
+		var user = {
+			team_id: payload.team.id,
+			id: payload.user.id,
+			name: payload.user.name
+		};
 
-	if (payload.actions[0].value == 'start_game') {
+		var dm = {
+			id: payload.channel.id
+		};
 
-		if (gm.exists(dm)) {
-			return res.status(200);
+		var game;
+
+		if (payload.actions[0].value == 'start_game') {
+
+			if (gm.exists(dm)) {
+				return res.status(200);
+			}
+
+			game = gm.get(user, dm, webClient);
+
+			var message = {
+				response_type: 'in_channel',
+	            delete_original: true
+			};
+
+			return res.status(200).json(message);
+
+		}
+
+		if (!gm.exists(dm)) {
+
+			var message = {
+				response_type: 'in_channel',
+	            replace_original: false,
+	            delete_original: false,
+	            text: 'Game is currently not running.'
+			};
+
+			return res.status(200).json(message);
+
 		}
 
 		game = gm.get(user, dm, webClient);
 
-		var message = {
-			response_type: 'in_channel',
-            delete_original: true
-		};
+		game.handleButtonClicked(payload, function(message) {
 
-		return res.status(200).json(message);
+			message = _.defaults({
+				response_type: 'in_channel',
+				replace_original: false
+			}, message);
 
-	}
+			res.status(200).json(message);
 
-	if (!gm.exists(dm)) {
-
-		var message = {
-			response_type: 'in_channel',
-            replace_original: false,
-            delete_original: false,
-            text: 'Game is currently not running.'
-		};
-
-		return res.status(200).json(message);
-
-	}
-
-	game = gm.get(user, dm, webClient);
-
-	game.handleButtonClicked(payload, function(message) {
-
-		message = _.defaults({
-			response_type: 'in_channel',
-			replace_original: false
-		}, message);
-
-		res.status(200).json(message);
+		});
 
 	});
 
@@ -116,81 +153,93 @@ app.post('/event', function (req, res) {
 			return res.status(200).send(payload.challenge);
 		} else if (payload.type == 'event_callback') {
 
-			var event = payload.event;
+			getWebClient(payload.team_id, function (err, webClient) {
 
-			if (event.type == 'message') {
+				var event = payload.event;
 
-				var message = event;
+				if (event.type == 'message') {
 
-				if (message.subtype && message.subtype == 'bot_message') {
-					return res.status(200).send('OK');
-				}
+					var message = event;
 
-				if (message.subtype && message.subtype == 'message_changed') {
-					return res.status(200).send('OK');
-				}
-
-				if (message.subtype && message.subtype == 'message_deleted') {
-					return res.status(200).send('OK');
-				}
-
-				// If this is a DM
-				if (message.channel.startsWith('D')) {
-
-					var user = {
-						team_id: payload.team_id,
-						id: message.user,
-						name: message.user
+					if (message.subtype && message.subtype == 'bot_message') {
+						return res.status(200).send('OK');
 					}
 
-					var dm = {
-						id: message.channel
-					};
+					if (message.subtype && message.subtype == 'message_changed') {
+						return res.status(200).send('OK');
+					}
 
-					var game;
+					if (message.subtype && message.subtype == 'message_deleted') {
+						return res.status(200).send('OK');
+					}
 
-					if (gm.exists(dm)) {
+					// If this is a DM
+					if (message.channel.startsWith('D')) {
 
-						game = gm.get(user, dm, webClient);
-						game.handleSlackMessage(message);
+						var user = {
+							team_id: payload.team_id,
+							id: message.user,
+							name: message.user
+						}
 
-					} else {
+						var dm = {
+							id: message.channel
+						};
 
-						var attachments = [];
+						var game;
 
-						var actions = [];
+						if (gm.exists(dm)) {
 
-						actions.push({
-							type: 'button',
-							value: 'start_game',
-							name: 'start_game',
-							text: 'Start Game'
-						});
+							game = gm.get(user, dm, webClient);
+							game.handleSlackMessage(message);
 
-						attachments.push({
-							text: '',
-							callback_id: dm.id + '-' + crypto.randomBytes(16).toString('hex'),
-							actions: actions
-						});
+						} else {
 
-						webClient.chat.postMessage(dm.id, 
-							"Based on John E. Dell's old Drug Wars game, dopewars is a simulation of an imaginary drug market.  dopewars is an All-American game which features buying, selling, and trying to get past the cops!" + "\n\n" +
-							"The first thing you need to do is pay off your debt to the Loan Shark. After that, your goal is to make as much money as possible (and stay alive)! You have one month of game time to make your fortune.",
-							{
-								attachments: attachments
+							var attachments = [];
+
+							var actions = [];
+
+							actions.push({
+								type: 'button',
+								value: 'start_game',
+								name: 'start_game',
+								text: 'Start Game'
 							});
 
+							attachments.push({
+								text: '',
+								callback_id: dm.id + '-' + crypto.randomBytes(16).toString('hex'),
+								actions: actions
+							});
+
+							webClient.chat.postMessage(dm.id, 
+								"Based on John E. Dell's old Drug Wars game, dopewars is a simulation of an imaginary drug market.  dopewars is an All-American game which features buying, selling, and trying to get past the cops!" + "\n\n" +
+								"The first thing you need to do is pay off your debt to the Loan Shark. After that, your goal is to make as much money as possible (and stay alive)! You have one month of game time to make your fortune.",
+								{
+									attachments: attachments
+								});
+
+						}
+
 					}
 
 				}
 
-			}
+				return res.status(200).send('OK');
+
+			});
+
+		} else {
+
+			return res.status(200).send('OK');
 
 		}
 
-	}
+	} else {
 
-	return res.status(200).send('OK');
+		return res.status(200).send('OK');
+
+	}
 
 });
 
@@ -200,6 +249,7 @@ app.get('/oauth', function (req, res) {
         req.query.code,
         {'grant_type':'client_credentials'},
         function (e, access_token, refresh_token, results) {
+        	rc.set('dopewars:' + results.team_id, results.bot.bot_access_token);
             res.redirect('/complete');
         }
     );
