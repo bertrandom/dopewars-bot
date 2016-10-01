@@ -153,7 +153,11 @@ app.post('/event', function (req, res) {
 			return res.status(200).send(payload.challenge);
 		} else if (payload.type == 'event_callback') {
 
-			getWebClient(payload.team_id, function (err, webClient) {
+			return getWebClient(payload.team_id, function (err, webClient) {
+
+				if (err) {
+					return res.status(500).send('Team not recognized.');
+				}
 
 				var event = payload.event;
 
@@ -229,17 +233,11 @@ app.post('/event', function (req, res) {
 
 			});
 
-		} else {
-
-			return res.status(200).send('OK');
-
 		}
 
-	} else {
-
-		return res.status(200).send('OK');
-
 	}
+
+	return res.status(200).send('OK');
 
 });
 
