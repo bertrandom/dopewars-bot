@@ -78,6 +78,19 @@ app.post('/button', function (req, res) {
 
 	}
 
+	if (!gm.exists(dm)) {
+
+		var message = {
+			response_type: 'in_channel',
+            replace_original: false,
+            delete_original: false,
+            text: 'Game is currently not running.'
+		};
+
+		return res.status(200).json(message);
+
+	}
+
 	game = gm.get(user, dm, webClient);
 
 	game.handleButtonClicked(payload, function(message) {
