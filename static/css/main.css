@@ -49,6 +49,26 @@ label {
     text-align: center;
 }
 
+.header {
+    background: #1A191B;
+}
+
+.header .pure-menu-selected .pure-menu-link {
+    color: white;
+}
+
+.home-menu li a:hover,
+.home-menu li a:focus {
+    background: none;
+    border: none;
+    color: #AECFE5;
+}
+
+.screenshot-container {
+    text-align: center;
+    padding-top: 20px;
+}
+
 /*
  * -- SPLASH STYLES --
  * This is the blue top section that appears on the page.
@@ -59,8 +79,8 @@ label {
     overflow: hidden;
     /* The following styles are required for the "scroll-over" effect */
     width: 100%;
-    height: 100%;
-    top: 0px;
+    height: 88%;
+    top: 50px;
     left: 0;
     position: fixed !important;
 }

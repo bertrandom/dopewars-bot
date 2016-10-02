@@ -75,7 +75,7 @@ var getWebClient = function(team_id, cb) {
 }
 
 app.get('/', function (req, res) {
-	res.render('home');
+	res.render('home', {home: true});
 });
 
 app.get('/complete', function (req, res) {
@@ -84,6 +84,13 @@ app.get('/complete', function (req, res) {
 
 app.get('/failed', function (req, res) {
 	res.render('failed');
+});
+
+app.get('/screenshots', function (req, res) {
+	res.render('screenshots', {
+		screenshots: true,
+		hideHands: true
+	});
 });
 
 app.post('/button', function (req, res) {

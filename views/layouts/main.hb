@@ -21,7 +21,25 @@
 </head>
 <body {{#if complete}}class="complete"{{/if}}>
 
+<div>
+
+    <div class="header">
+        <div class="home-menu pure-menu pure-menu-horizontal">
+            <a class="pure-menu-heading" href="/">dopewars bot</a>
+
+            <ul class="pure-menu-list">
+                <li class="pure-menu-item {{#if home}}pure-menu-selected{{/if}}"><a href="/" class="pure-menu-link">Home</a></li>
+                <li class="pure-menu-item {{#if screenshots}}pure-menu-selected{{/if}}"><a href="/screenshots" class="pure-menu-link">Screenshots</a></li>
+                <li class="pure-menu-item"><a href="#" class="pure-menu-link">About</a></li>
+            </ul>
+        </div>
+    </div>
+
     {{{body}}}
+
+    {{#if hideHands}}
+
+    {{else}}
 
     <!-- Left Hand -->
 
@@ -437,6 +455,10 @@
         </g>
     </g>
     </svg>
+
+    {{/if}}
+
+</div>
 
 </body>
 </html>
