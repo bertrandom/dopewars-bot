@@ -19,11 +19,11 @@ var rc = redis.createClient();
 
 var OAuth2 = OAuth.OAuth2;    
 var oauth2 = new OAuth2(config.slack.client_id,
-    config.slack.client_secret,
-    'https://slack.com/', 
-    '/oauth/authorize',
-    '/api/oauth.access', 
-    null);
+	config.slack.client_secret,
+	'https://slack.com/', 
+	'/oauth/authorize',
+	'/api/oauth.access', 
+	null);
 
 var gm = new GameManager();
 
@@ -32,8 +32,8 @@ var webClients = {};
 var app = express();
 
 app.engine('hb', exphbs({
-    defaultLayout: 'main',
-    extname: 'hb'
+	defaultLayout: 'main',
+	extname: 'hb'
 }));
 
 app.set('view engine', 'hb');
@@ -75,11 +75,11 @@ var getWebClient = function(team_id, cb) {
 }
 
 app.get('/', function (req, res) {
-    res.render('home');
+	res.render('home');
 });
 
 app.get('/complete', function (req, res) {
-    res.render('complete', {complete: true});
+	res.render('complete', {complete: true});
 });
 
 app.post('/button', function (req, res) {
@@ -114,7 +114,7 @@ app.post('/button', function (req, res) {
 
 			var message = {
 				response_type: 'in_channel',
-	            delete_original: true
+				delete_original: true
 			};
 
 			return res.status(200).json(message);
@@ -125,9 +125,9 @@ app.post('/button', function (req, res) {
 
 			var message = {
 				response_type: 'in_channel',
-	            replace_original: false,
-	            delete_original: false,
-	            text: 'Game is currently not running.'
+				replace_original: false,
+				delete_original: false,
+				text: 'Game is currently not running.'
 			};
 
 			return res.status(200).json(message);
@@ -251,16 +251,16 @@ app.post('/event', function (req, res) {
 
 app.get('/oauth', function (req, res) {
 
-    oauth2.getOAuthAccessToken(
-        req.query.code,
-        {'grant_type':'client_credentials'},
-        function (e, access_token, refresh_token, results) {
+	oauth2.getOAuthAccessToken(
+		req.query.code,
+		{'grant_type':'client_credentials'},
+		function (e, access_token, refresh_token, results) {
 
-        	rc.set('dopewars:' + results.team_id, results.bot.bot_access_token, function(err, res) {
+			rc.set('dopewars:' + results.team_id, results.bot.bot_access_token, function(err, res) {
 
-        		if (err) {
-        			return;
-        		}
+				if (err) {
+					return;
+				}
 
 				getWebClient(results.team_id, function (err, webClient) {
 
@@ -285,13 +285,13 @@ app.get('/oauth', function (req, res) {
 				});
 
 
-        	});
-            res.redirect('/complete');
-        }
-    );
+			});
+			res.redirect('/complete');
+		}
+	);
 
 });
 
 app.listen(config.port, function () {
-    console.log('Server started on port ' + config.port + '.');
+	console.log('Server started on port ' + config.port + '.');
 });
