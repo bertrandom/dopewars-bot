@@ -82,6 +82,10 @@ app.get('/complete', function (req, res) {
 	res.render('complete', {complete: true});
 });
 
+app.get('/failed', function (req, res) {
+	res.render('failed');
+});
+
 app.post('/button', function (req, res) {
 
 	var payload = JSON.parse(req.body.payload);
@@ -225,7 +229,7 @@ app.post('/event', function (req, res) {
 							});
 
 							webClient.chat.postMessage(dm.id, 
-								"Based on John E. Dell's old Drug Wars game, dopewars is a simulation of an imaginary drug market.  dopewars is an All-American game which features buying, selling, and trying to get past the cops!" + "\n\n" +
+								"Based on John E. Dell's old Drug Wars game, dopewars is a simulation of an imaginary drug market. dopewars is an All-American game which features buying, selling, and trying to get past the cops!" + "\n\n" +
 								"The first thing you need to do is pay off your debt to the Loan Shark. After that, your goal is to make as much money as possible (and stay alive)! You have one month of game time to make your fortune.",
 								{
 									attachments: attachments
@@ -255,6 +259,10 @@ app.get('/oauth', function (req, res) {
 		req.query.code,
 		{'grant_type':'client_credentials'},
 		function (e, access_token, refresh_token, results) {
+
+			if (!(results && results.ok)) {
+				return res.redirect('/failed');				
+			}
 
 			rc.set('dopewars:' + results.team_id, results.bot.bot_access_token, function(err, res) {
 
