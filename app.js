@@ -74,6 +74,14 @@ var getWebClient = function(team_id, cb) {
 
 }
 
+app.get('/', function (req, res) {
+    res.render('home');
+});
+
+app.get('/complete', function (req, res) {
+    res.render('complete', {complete: true});
+});
+
 app.post('/button', function (req, res) {
 
 	var payload = JSON.parse(req.body.payload);
@@ -247,7 +255,37 @@ app.get('/oauth', function (req, res) {
         req.query.code,
         {'grant_type':'client_credentials'},
         function (e, access_token, refresh_token, results) {
-        	rc.set('dopewars:' + results.team_id, results.bot.bot_access_token);
+
+        	rc.set('dopewars:' + results.team_id, results.bot.bot_access_token, function(err, res) {
+
+        		if (err) {
+        			return;
+        		}
+
+				getWebClient(results.team_id, function (err, webClient) {
+
+					if (err) {
+						return;
+					}
+
+					webClient.im.open(results.user_id, function(err, dmInfo) {
+
+						if (err) {
+							return;
+						}
+
+						var dm = {
+							id: dmInfo.channel.id
+						};
+
+						webClient.chat.postMessage(dm.id, "Thanks for installing dopewars bot! Users on this team can send me a DM to start a game.");
+
+					});
+
+				});
+
+
+        	});
             res.redirect('/complete');
         }
     );
