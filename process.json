@@ -1,0 +1,8 @@
+{
+  "apps" : [{
+    "name"         : "dopewars-bot",
+    "script"       :  "./app.js",
+    "watch"        : ["app.js", "static/css", "static/img", "views", "views/layouts"],
+    "ignore_watch" : ["node_modules", "state", ".git"],
+  }]
+}

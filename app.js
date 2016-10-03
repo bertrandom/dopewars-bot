@@ -93,6 +93,14 @@ app.get('/screenshots', function (req, res) {
 	});
 });
 
+app.get('/privacy', function (req, res) {
+	res.render('privacy', {
+		privacy: true,
+		hideHands: true
+	});
+});
+
+
 app.post('/button', function (req, res) {
 
 	var payload = JSON.parse(req.body.payload);

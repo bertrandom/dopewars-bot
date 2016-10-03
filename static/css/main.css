@@ -23,7 +23,9 @@ h3,
 h4,
 h5,
 h6,
-label {
+label,
+.content p,
+.content a {
     color: white;
 }
 
