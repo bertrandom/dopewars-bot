@@ -3,10 +3,6 @@
 		"client_id": "",
 		"client_secret": ""
 	},
-	"bot": {
-		"bot_user_id": "",
-		"bot_access_token": ""
-	},
 	"debug": false,
 	"port": 8080
 }
