@@ -1,12 +1,12 @@
 {
-  "name": "dopewars-slack-client",
+  "name": "dopewars-bot",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Bertrand Fan <bertrand@fan.net>",
   "license": "ISC",
   "dependencies": {
     "@slack/client": "^3.4.0",
