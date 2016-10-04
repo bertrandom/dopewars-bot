@@ -100,6 +100,12 @@ app.get('/privacy', function (req, res) {
 	});
 });
 
+app.get('/support', function (req, res) {
+	res.render('support', {
+		support: true,
+		hideHands: true
+	});
+});
 
 app.post('/button', function (req, res) {
 
@@ -134,6 +140,21 @@ app.post('/button', function (req, res) {
 			var message = {
 				response_type: 'in_channel',
 				delete_original: true
+			};
+
+			return res.status(200).json(message);
+
+		} else if (payload.actions[0].value == 'about') {
+
+			if (gm.exists(dm)) {
+				return res.status(200);
+			}
+
+			var message = {
+				response_type: 'in_channel',
+				replace_original: false,
+				delete_original: false,
+				text: 'dopewars bot is created by <https://twitter.com/bertrandom|@bertrandom> which is a wrapper around <http://dopewars.sourceforge.net/|dopewars> by Ben Webb which is a rewrite of a game called "Drug Wars" by John E. Dell.\n\nhttps://dopewarsbot.com'
 			};
 
 			return res.status(200).json(message);
@@ -235,6 +256,13 @@ app.post('/event', function (req, res) {
 								value: 'start_game',
 								name: 'start_game',
 								text: 'Start Game'
+							});
+
+							actions.push({
+								type: 'button',
+								value: 'about',
+								name: 'about',
+								text: 'About'
 							});
 
 							attachments.push({
