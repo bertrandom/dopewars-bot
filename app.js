@@ -111,6 +111,10 @@ app.post('/button', function (req, res) {
 
 	var payload = JSON.parse(req.body.payload);
 
+	if (payload.token != config.slack.verification_token) {
+		return res.status(401).send('Unauthorized');
+	}
+
 	getWebClient(payload.team.id, function (err, webClient) {
 
 		if (err) {
@@ -194,6 +198,10 @@ app.post('/button', function (req, res) {
 app.post('/event', function (req, res) {
 
 	var payload = req.body;
+
+	if (payload.token != config.slack.verification_token) {
+		return res.status(401).send('Unauthorized');
+	}
 
 	if (payload) {
 

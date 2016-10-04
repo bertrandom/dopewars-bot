@@ -1,7 +1,8 @@
 {
 	"slack": {
 		"client_id": "",
-		"client_secret": ""
+		"client_secret": "",
+		"verification_token": ""
 	},
 	"debug": false,
 	"port": 8080
