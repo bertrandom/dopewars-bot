@@ -48,7 +48,7 @@
             <ul class="pure-menu-list">
                 <li class="pure-menu-item {{#if home}}pure-menu-selected{{/if}}"><a href="/" class="pure-menu-link">Home</a></li>
                 <li class="pure-menu-item {{#if screenshots}}pure-menu-selected{{/if}}"><a href="/screenshots" class="pure-menu-link">Screenshots</a></li>
-                <li class="pure-menu-item"><a href="#" class="pure-menu-link">About</a></li>
+                <li class="pure-menu-item"><a href="https://medium.com/@bertrandom/ive-played-dopewars-on-slack-45fab15296f8" class="pure-menu-link">About</a></li>
             </ul>
         </div>
     </div>
